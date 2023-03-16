@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import KeychainAccess
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -16,7 +17,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
 
         self.window = UIWindow(windowScene: windowScene)
-        self.window?.rootViewController = UINavigationController(rootViewController: ViewController())
+
+        let keychain = Keychain()
+
+        self.window?.rootViewController = UINavigationController(
+            rootViewController: LoginScreenViewController(state: keychain.allItems().isEmpty ? .noPassword : .savedPassword))
         self.window?.makeKeyAndVisible()
     }
 

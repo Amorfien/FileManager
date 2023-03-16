@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  DocumentsViewController.swift
 //  FileManager
 //
 //  Created by Pavel Grigorev on 11.03.2023.
@@ -7,10 +7,10 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class DocumentsViewController: UIViewController {
 
     private lazy var documentsTableView: UITableView = {
-        let tableView = UITableView(frame: .zero, style: .grouped)
+        let tableView = UITableView(frame: .zero, style: .plain)
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "documents")
         tableView.rowHeight = 120
         tableView.delegate = self
@@ -19,16 +19,16 @@ class ViewController: UIViewController {
         return tableView
     }()
 
-    private var documentURL: URL = URL(string: "file:///")!
-    private var contents: [String] = []
+            private var documentURL: URL = URL(string: "file:///")!
+            private var contents: [String] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setupNavigation()
         setupView()
-        getDocumentURL()
-        getDocumentsContent()
+                getDocumentURL()
+                getDocumentsContent()
     }
 
     private func setupNavigation() {
@@ -50,32 +50,32 @@ class ViewController: UIViewController {
         ])
     }
 
-    private func getDocumentURL() {
-        do {
-            documentURL = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
-//            print(documentURL, "🙊")
-        } catch let error {
-            print(error, "🪲 get URL error")
-        }
-    }
-    private func getDocumentsContent() {
-        do {
-            contents = try FileManager.default.contentsOfDirectory(atPath: documentURL.path)
-        } catch let error {
-            print(error, "🐙 get list error")
-        }
-        contents = contents.filter { $0 != ".DS_Store" }
-        print(contents, "🖼️")
-    }
-    // * * *
-    private func removeContent(by name: String) {
-        do {
-            let imagePath =  documentURL.appending(path: name)
-            try FileManager.default.removeItem(at: imagePath)
-        } catch let error {
-            print(error, "🦀 remove error")
-        }
-    }
+            private func getDocumentURL() {
+                do {
+                    documentURL = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+        //            print(documentURL, "🙊")
+                } catch let error {
+                    print(error, "🪲 get URL error")
+                }
+            }
+            private func getDocumentsContent() {
+                do {
+                    contents = try FileManager.default.contentsOfDirectory(atPath: documentURL.path)
+                } catch let error {
+                    print(error, "🐙 get list error")
+                }
+                contents = contents.filter { $0 != ".DS_Store" }
+                print(contents, "🖼️")
+            }
+            // * * *
+            private func removeContent(by name: String) {
+                do {
+                    let imagePath =  documentURL.appending(path: name)
+                    try FileManager.default.removeItem(at: imagePath)
+                } catch let error {
+                    print(error, "🦀 remove error")
+                }
+            }
 
     @objc private func addPhotoButton() {
         let imagePicker = UIImagePickerController()
@@ -85,7 +85,7 @@ class ViewController: UIViewController {
 
 }
 
-extension ViewController: UITableViewDelegate, UITableViewDataSource {
+extension DocumentsViewController: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         contents.count
@@ -116,7 +116,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
 
 }
 
-extension ViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+extension DocumentsViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let pickedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
