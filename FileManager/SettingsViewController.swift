@@ -11,6 +11,12 @@ import KeychainAccess
 protocol DeleteUserProtocol: AnyObject {
     func deleteUser()
 }
+protocol EmptyTableProtocol: AnyObject {
+    func emptyTable()
+}
+protocol SortingTableProtocol: AnyObject{
+    func sortingTable(increasing: Bool)
+}
 
 class SettingsViewController: UIViewController {
 
@@ -23,9 +29,9 @@ class SettingsViewController: UIViewController {
         return stackView
     }()
 
-    private let segmentedControl: UISegmentedControl = {
+    private lazy var segmentedControl: UISegmentedControl = {
         let segment = UISegmentedControl(items: ["По возрастанию", "По убыванию", "Без сортировки"])
-        segment.selectedSegmentIndex = 0
+        segment.addTarget(self, action: #selector(selectorDidChange), for: .valueChanged)
         segment.translatesAutoresizingMaskIntoConstraints = false
         return segment
     }()
@@ -47,7 +53,11 @@ class SettingsViewController: UIViewController {
         return button
     }()
 
-    weak var deleteDelegate: DeleteUserProtocol?
+    weak var emptyTableDelegate: EmptyTableProtocol?
+    weak var deleteUserDelegate: DeleteUserProtocol?
+    weak var sortingTableDelegate: SortingTableProtocol?
+
+    let userDefaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,6 +67,11 @@ class SettingsViewController: UIViewController {
         self.view.backgroundColor = .systemYellow
 
         setupUI()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        segmentedControl.selectedSegmentIndex = userDefaults.integer(forKey: "sorting")
     }
 
     private func setupUI() {
@@ -70,30 +85,31 @@ class SettingsViewController: UIViewController {
             stackView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
             stackView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 15),
             stackView.heightAnchor.constraint(equalToConstant: 150)
-
-
-
         ])
     }
 
-    @objc private func changePassword() {
+    @objc private func selectorDidChange() {
+        userDefaults.set(segmentedControl.selectedSegmentIndex, forKey: "sorting")
 
+        // необязательное обращение к делегату
+//        switch segmentedControl.selectedSegmentIndex {
+//        case 0: sortingTableDelegate?.sortingTable(increasing: true)
+//        case 1: sortingTableDelegate? .sortingTable(increasing: false)
+//        default: break
+//        }
+    }
+
+    @objc private func changePassword() {
+        present(LoginScreenViewController(state: .changePassword), animated: true)
     }
 
     @objc private func deleteUser() {
         Keychain()[LoginScreenViewController.Resources.keychainItemName] = nil
         print(Keychain().allItems().count)
-        // FIXME: - Никак не получается откатиться на экран логина не создавая его заново
+        FileManagerService.shared.removeAll()
 
-//        show(LoginScreenViewController(state: .noPassword), sender: nil)
-//        self.dismiss(animated: true)
-//        navigationController?.popToRootViewController(animated: true)
-//        navigationController?.dismiss(animated: true)
-//        tabBarController?.dismiss(animated: true)
-//        navigationController?.tabBarController?.dismiss(animated: true)
-//        tabBarController?.navigationController?.dismiss(animated: true)
-//        self.navigationController?.navigationItem.backAction.
-        deleteDelegate?.deleteUser()
+        deleteUserDelegate?.deleteUser()
+        emptyTableDelegate?.emptyTable()
     }
     
 }

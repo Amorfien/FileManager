@@ -69,9 +69,9 @@
 				187359DD29C0A4C800CCA0B7 /* TabBarController.swift */,
 				187359E129C0A7FC00CCA0B7 /* LoginScreenViewController.swift */,
 				1899685F29BCC72200D7A5A3 /* DocumentsViewController.swift */,
-				18AF9E0029C3B63E004EA7D2 /* FileManagerService.swift */,
 				187359DF29C0A5DB00CCA0B7 /* SettingsViewController.swift */,
 				1899686429BCC72300D7A5A3 /* Assets.xcassets */,
+				18AF9E0029C3B63E004EA7D2 /* FileManagerService.swift */,
 				1899686629BCC72300D7A5A3 /* LaunchScreen.storyboard */,
 				1899686929BCC72300D7A5A3 /* Info.plist */,
 			);

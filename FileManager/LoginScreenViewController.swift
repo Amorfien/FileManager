@@ -32,6 +32,7 @@ class LoginScreenViewController: UIViewController {
         textField.borderStyle = .bezel
         textField.leftView = UIView(frame: CGRect(origin: .zero, size: CGSize(width: 10, height: 0)))
         textField.leftViewMode = .always
+        textField.contentVerticalAlignment = .center
         textField.delegate = self
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
@@ -58,6 +59,7 @@ class LoginScreenViewController: UIViewController {
     enum State: String {
         case noPassword = "Создать пароль"
         case savedPassword = "Введите пароль"
+        case changePassword = "Сменить пароль"
     }
     private var state: State {
         didSet {
@@ -69,13 +71,12 @@ class LoginScreenViewController: UIViewController {
     private var password = ""
     let keychain: Keychain
 
-    let myTabBarController: TabBarController
+    var myTabBarController: TabBarController?
 
     // MARK: - INIT
     init(state: State) {
         self.state = state
         self.keychain = Keychain()
-        self.myTabBarController = TabBarController()
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -89,24 +90,24 @@ class LoginScreenViewController: UIViewController {
 
         self.view.backgroundColor = .systemGray6
 
+        self.myTabBarController = TabBarController(loginScreen: self)
+
         setupUI()
 
-        print(keychain.allItems().count)
-
-        // не получается достучаться до делегата нужного вьюконтроллера :(
-        if let tb = myTabBarController.navigationController?.viewControllers.last as? SettingsViewController {
-            tb.deleteDelegate = self
-            print("DELEGATE success!")
-        } else {
-            print("no delegate (((")
-        }
+//        print(keychain.allItems().count)
 
 
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        passLabel.text = state == .savedPassword ? "Авторизуйтесь" : "Зарегистрируйтесь"
+        switch state {
+        case .savedPassword: passLabel.text = "Авторизуйтесь"
+        case .noPassword: passLabel.text = "Зарегистрируйтесь"
+        case .changePassword:
+            passLabel.text = "Смените пароль"
+            self.view.backgroundColor = .systemMint
+        }
         setupButton()
     }
 
@@ -139,7 +140,7 @@ class LoginScreenViewController: UIViewController {
 
     @objc private func loginButtonDidTap() {
         switch state {
-        case .noPassword:
+        case .noPassword, .changePassword:
             if password == "" {
                 password = passTextField.text!
                 passButton.setTitle("Повторите пароль", for: .normal)
@@ -151,25 +152,26 @@ class LoginScreenViewController: UIViewController {
                     setupButton()
                     alerting(message: "\nВы не смогли повторить пароль.\nВнимательней")
                 } else {
-                    print("Password saved \(password)")
+//                    print("Password saved \(password)")
                     keychain[Resources.keychainItemName] = password
-                    state = .savedPassword
-                    self.show(myTabBarController, sender: nil)
+                    if state == .noPassword {
+                        state = .savedPassword
+                        self.show(myTabBarController!, sender: nil)
+                    } else if state == .changePassword {
+                        state = .savedPassword
+                        self.dismiss(animated: true)
+                    }
                 }
             }
         case .savedPassword:
-            // checking
             if keychain[Resources.keychainItemName] == passTextField.text! {
-
-                self.show(myTabBarController, sender: nil)
+                self.show(myTabBarController!, sender: nil)
             } else {
                 alerting(message: "\nВы ввели неверный пароль.\nПопробуйте ещё")
                 state = .savedPassword
             }
-            //
-            //
-
         }
+        passTextField.text = ""
 
     }
 
@@ -195,6 +197,7 @@ extension LoginScreenViewController: UITextFieldDelegate {
 extension LoginScreenViewController: DeleteUserProtocol {
     func deleteUser() {
         self.state = .noPassword
+        password = ""
         print("Юзер удалён")
     }
 }
